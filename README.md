@@ -1,10 +1,12 @@
-# AI Usage
+# AI Usage Meters
 
 ![GNOME Shell 46–50](https://img.shields.io/badge/GNOME%20Shell-46--50-blue)
 
 See how much of your Claude, Codex and Cursor limits you've used, right from the GNOME top bar.
 
 Brings together [Claude Code Usage](https://github.com/Haletran/claude-usage-extension) by Haletran and [Codex Usage](https://github.com/kevinpita/codex-usage-extension) by Kevin Pita in one extension.
+
+<img width="1920" height="1080" alt="GNOME Desktop with AI Usage Meters" src="https://github.com/user-attachments/assets/7001d413-8623-40c6-9586-b94827c6fac2" />
 
 ## What you get
 
