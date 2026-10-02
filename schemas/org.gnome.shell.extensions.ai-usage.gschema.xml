@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="ai-usage">
+  <schema id="org.gnome.shell.extensions.ai-usage" path="/org/gnome/shell/extensions/ai-usage/">
+    <key name="refresh-interval" type="i">
+      <default>300</default>
+      <summary>Refresh interval</summary>
+      <description>How often to refresh usage data, in seconds</description>
+    </key>
+    <key name="proxy-url" type="s">
+      <default>''</default>
+      <summary>Proxy URL</summary>
+      <description>HTTP proxy URL, for example http://localhost:11809. Empty means no proxy.</description>
+    </key>
+    <key name="prefs-page" type="s">
+      <default>''</default>
+      <summary>Settings tab to show</summary>
+      <description>Set by a menu's Settings button so the settings window opens on that service's tab</description>
+    </key>
+  </schema>
+
+  <!-- Shared by every service. Each service below gets its own copy at its own path. -->
+  <schema id="org.gnome.shell.extensions.ai-usage.service">
+    <key name="show-in-panel" type="b">
+      <default>true</default>
+      <summary>Show in top bar</summary>
+    </key>
+    <key name="display-mode" type="s">
+      <choices>
+        <choice value="rings"/>
+        <choice value="rings-only"/>
+        <choice value="ring"/>
+        <choice value="text"/>
+        <choice value="bar"/>
+        <choice value="both"/>
+      </choices>
+      <default>'rings'</default>
+      <summary>Top bar display</summary>
+      <description>'rings' double ring and percentage. The outer ring is the first limit (5-hour, or Cursor Models) and the inner ring is the second (weekly, or Other Models). 'rings-only' is the double ring alone, 'ring' a single ring and percentage, 'text' percentage, 'bar' a progress bar, 'both' bar and percentage</description>
+    </key>
+    <key name="panel-window" type="s">
+      <choices>
+        <choice value="primary"/>
+        <choice value="secondary"/>
+        <choice value="max"/>
+      </choices>
+      <default>'primary'</default>
+      <summary>Limit the top bar percentage follows</summary>
+      <description>'primary' the first limit, 'secondary' the second limit, 'max' whichever is closer to running out</description>
+    </key>
+    <key name="usage-display" type="s">
+      <choices>
+        <choice value="used"/>
+        <choice value="remaining"/>
+      </choices>
+      <default>'used'</default>
+      <summary>Show used or remaining percentages</summary>
+    </key>
+    <key name="icon-style" type="s">
+      <choices>
+        <choice value="color"/>
+        <choice value="monochrome"/>
+      </choices>
+      <default>'color'</default>
+      <summary>Top bar icon style</summary>
+    </key>
+    <key name="show-icon" type="b">
+      <default>true</default>
+      <summary>Show the service icon in the top bar</summary>
+    </key>
+    <key name="show-tier" type="b">
+      <default>true</default>
+      <summary>Show the plan name in the top bar</summary>
+    </key>
+    <key name="show-additional-limits" type="b">
+      <default>true</default>
+      <summary>Show per-model limits in the menu</summary>
+    </key>
+    <key name="folder" type="s">
+      <default>''</default>
+      <summary>Sign-in folder</summary>
+      <description>Folder holding the service's sign-in. Empty means the usual place (~/.claude, ~/.codex or ~/.config/Cursor).</description>
+    </key>
+    <key name="paused-until" type="x">
+      <default>0</default>
+      <summary>Wait before checking again</summary>
+      <description>Set when the service asks to check less often. Unix time before which no checks are made.</description>
+    </key>
+    <key name="last-usage" type="s">
+      <default>''</default>
+      <summary>Last usage seen</summary>
+      <description>Shown, marked out of date, when new numbers can't be fetched</description>
+    </key>
+  </schema>
+
+  <schema id="org.gnome.shell.extensions.ai-usage.claude"
+          path="/org/gnome/shell/extensions/ai-usage/claude/"
+          extends="org.gnome.shell.extensions.ai-usage.service"/>
+  <schema id="org.gnome.shell.extensions.ai-usage.codex"
+          path="/org/gnome/shell/extensions/ai-usage/codex/"
+          extends="org.gnome.shell.extensions.ai-usage.service"/>
+  <!-- Two pools that reset together. The number follows whichever runs out first. -->
+  <schema id="org.gnome.shell.extensions.ai-usage.cursor"
+          path="/org/gnome/shell/extensions/ai-usage/cursor/"
+          extends="org.gnome.shell.extensions.ai-usage.service">
+    <override name="panel-window">'max'</override>
+  </schema>
+</schemalist>

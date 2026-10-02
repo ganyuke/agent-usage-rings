@@ -1,0 +1,9 @@
+{
+  "name": "AI Usage Meters",
+  "description": "See how much of your Claude, Codex and Cursor limits you've used, right from the top bar. Not affiliated with Anthropic, OpenAI or Anysphere (Cursor).",
+  "uuid": "ai-usage@ganyuke.github.io",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.ai-usage",
+  "version-name": "1.0",
+  "url": "https://github.com/ganyuke/ai-usage-meters"
+}

@@ -1,0 +1,174 @@
+/* ===== panel button ===== */
+.aiu-panel {
+    spacing: 5px;
+    padding: 0 4px;
+}
+
+.aiu-panel-icon {
+    icon-size: 16px;
+}
+
+.aiu-ring {
+    width: 18px;
+    height: 18px;
+}
+
+.aiu-rings {
+    width: 20px;
+    height: 20px;
+}
+
+.aiu-panel-bar {
+    width: 34px;
+    height: 10px;
+}
+
+.aiu-panel-pct {
+    font-weight: bold;
+    font-feature-settings: "tnum";
+}
+
+.aiu-panel-pct.usage-high {
+    color: #ffa348;
+}
+
+.aiu-panel-pct.usage-critical {
+    color: #ff6b6b;
+}
+
+.aiu-panel-tier {
+    font-size: 9pt;
+    font-weight: bold;
+    color: inherit;
+    opacity: 0.63;
+    font-feature-settings: "tnum";
+}
+
+/* ===== menu ===== */
+.aiu-popup {
+    width: 300px;
+    spacing: 0;
+}
+
+.aiu-header {
+    spacing: 12px;
+}
+
+.aiu-logo {
+    icon-size: 32px;
+}
+
+.aiu-title-row {
+    spacing: 8px;
+}
+
+.aiu-title {
+    font-weight: bold;
+}
+
+.aiu-subtitle {
+    font-size: 9pt;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.aiu-pill {
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 99px;
+    color: inherit;
+    background-color: rgba(128, 128, 128, 0.2);
+}
+
+.aiu-heading {
+    font-weight: bold;
+    margin: 6px 0 6px 0;
+}
+
+/* ===== meters ===== */
+.aiu-meter {
+    spacing: 6px;
+    margin: 4px 0 10px 0;
+}
+
+.aiu-meter-row {
+    spacing: 8px;
+}
+
+.aiu-meter-pct {
+    font-feature-settings: "tnum";
+}
+
+.aiu-level {
+    height: 6px;
+}
+
+.aiu-caption,
+.aiu-note {
+    font-size: 9pt;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.aiu-note-warn {
+    color: #ffa348;
+    opacity: 1;
+}
+
+.aiu-reset-list {
+    spacing: 4px;
+    margin: 0 0 4px 0;
+}
+
+.aiu-reset-row {
+    spacing: 8px;
+}
+
+.aiu-reset-time,
+.aiu-reset-empty {
+    color: inherit;
+    opacity: 0.7;
+    font-feature-settings: "tnum";
+}
+
+.aiu-problem {
+    spacing: 4px;
+    margin: 0 0 8px 0;
+}
+
+.aiu-problem-text {
+    font-weight: bold;
+    color: #ffa348;
+}
+
+.aiu-problem-hint {
+    font-size: 9pt;
+    color: inherit;
+    opacity: 0.7;
+}
+
+/* ===== footer ===== */
+.aiu-footer {
+    spacing: 8px;
+}
+
+.aiu-updated {
+    font-size: 9pt;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.aiu-updated-stale {
+    color: #ffa348;
+    opacity: 1;
+}
+
+.aiu-icon-button StIcon {
+    icon-size: 16px;
+}
+
+/* These items only show information. Keep them from looking disabled. */
+.popup-menu-item.aiu-info:insensitive {
+    color: inherit;
+}
