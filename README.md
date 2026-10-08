@@ -4,7 +4,7 @@
 
 Put pretty double-circles in your GNOME top bar so you can watch your weekly usage for Claude, Codex, and Cursor disappear in seconds from the comforts of your GNOME desktop.
 
-Combines [Claude Code Usage](https://github.com/Haletran/claude-usage-extension) by Haletran and its Codex-flavoured fork [Codex Usage](https://github.com/kevinpita/codex-usage-extension) by Kevin Pita back into one extension.
+Combines [Claude Code Usage](https://github.com/Haletran/claude-usage-extension) by Haletran and its Codex-flavoured fork [Codex Usage](https://github.com/kevinpita/codex-usage-extension) by Kevin Pita back into one extension. Plus Cursor, thanks to the similar-family [AI Usage](https://github.com/byte4day/AI-Usage-Extension) by byte4day. Design and burn estimates originate from Codex Usage, which was inspired by [ClaudeCodeUsage](https://github.com/dvdstelt/ClaudeCodeUsage) by Dennis van der Stelt.
 
 **Disclaimer: This extension is not affiliated with, funded by, or associated with Anthropic, OpenAI or Anysphere (Cursor).**
 

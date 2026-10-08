@@ -104,9 +104,10 @@ function tierLabel(raw, known) {
     const text = `${raw ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
     if (!text)
         return null;
-    for (const [key, label] of known)
+    for (const [key, label] of known) {
         if (text.includes(key))
             return label;
+    }
     return text.toUpperCase();
 }
 
@@ -127,7 +128,7 @@ function claudeTier(oauth) {
 }
 
 function claudeWindow(w) {
-    return { utilization: percent(w?.utilization), resets_at: w?.resets_at ?? null };
+    return {utilization: percent(w?.utilization), resets_at: w?.resets_at ?? null};
 }
 
 async function loadClaude(folder, session, cancellable) {
@@ -145,7 +146,7 @@ async function loadClaude(folder, session, cancellable) {
         .filter(([key]) => data[key])
         .map(([key, name]) => ({
             name,
-            windows: [{ label: _('Weekly limit'), win: claudeWindow(data[key]), total: SEVEN_DAYS }],
+            windows: [{label: _('Weekly limit'), win: claudeWindow(data[key]), total: SEVEN_DAYS}],
         }));
 
     return {
@@ -208,18 +209,18 @@ async function loadCodex(folder, session, cancellable) {
 
     const usage = {
         tier: codexTier(data.plan_type ?? rl.plan ?? rl.subscription_type ?? rl.rate_limit_tier ?? rl.tier),
-        primary: codexWindow(rl.primary_window, FIVE_HOURS) ?? { utilization: 0, resets_at: null },
-        secondary: codexWindow(rl.secondary_window, SEVEN_DAYS) ?? { utilization: 0, resets_at: null },
+        primary: codexWindow(rl.primary_window, FIVE_HOURS) ?? {utilization: 0, resets_at: null},
+        secondary: codexWindow(rl.secondary_window, SEVEN_DAYS) ?? {utilization: 0, resets_at: null},
         additional: (data.additional_rate_limits ?? [])
             .filter(entry => entry?.rate_limit)
             .map(entry => ({
                 name: `${entry.limit_name ?? _('Other')}`,
                 windows: [
-                    { label: _('5-hour limit'), win: codexWindow(entry.rate_limit.primary_window, FIVE_HOURS), total: FIVE_HOURS },
-                    { label: _('Weekly limit'), win: codexWindow(entry.rate_limit.secondary_window, SEVEN_DAYS), total: SEVEN_DAYS },
+                    {label: _('5-hour limit'), win: codexWindow(entry.rate_limit.primary_window, FIVE_HOURS), total: FIVE_HOURS},
+                    {label: _('Weekly limit'), win: codexWindow(entry.rate_limit.secondary_window, SEVEN_DAYS), total: SEVEN_DAYS},
                 ].filter(w => w.win),
             })),
-        resets: { count: data.rate_limit_reset_credits?.available_count ?? 0, details: [] },
+        resets: {count: data.rate_limit_reset_credits?.available_count ?? 0, details: []},
     };
 
     if (usage.resets.count > 0) {
@@ -227,7 +228,7 @@ async function loadCodex(folder, session, cancellable) {
             const credits = await getJson(session, codexMessage(CODEX_RESETS_API, tokens), cancellable);
             usage.resets.details = (credits.credits ?? [])
                 .filter(credit => credit?.status === 'available')
-                .map(credit => ({ title: credit.title || _('Full reset'), expiresAt: credit.expires_at ?? null }));
+                .map(credit => ({title: credit.title || _('Full reset'), expiresAt: credit.expires_at ?? null}));
         } catch (e) {
             if (isCancelled(e))
                 throw e;
@@ -346,6 +347,28 @@ function cursorSpendPercent(pool) {
     return null;
 }
 
+function cursorPoolPercents(data, pools) {
+    // auto is for first-party cursor models, api is for other models
+    // api might be missing if you use the Start plan
+    // and i think teams are different but I don't use them so I don't know
+    let auto = cursorPoolPercent(pools, 'autoPercentUsed');
+    let api = cursorPoolPercent(pools, 'apiPercentUsed');
+    if (auto === null && api === null) {
+        const autoMsg = cursorMessagePercent(data.autoModelSelectedDisplayMessage);
+        const apiMsg = cursorMessagePercent(data.namedModelSelectedDisplayMessage);
+        if (autoMsg !== null && apiMsg !== null) {
+            auto = autoMsg;
+            api = apiMsg;
+        }
+    }
+    if (auto === null) {
+        if (!data.isUnlimited)
+            throw new UsageError('server', 'no plan usage in response');
+        auto = 0;
+    }
+    return {auto, api};
+}
+
 async function loadCursor(folder, session, cancellable) {
     const token = await cursorIdeToken(folder, cancellable) ?? await cursorCliToken(cancellable);
     if (!token)
@@ -366,26 +389,9 @@ async function loadCursor(folder, session, cancellable) {
     const end = Date.parse(data.billingCycleEnd);
     const total = Number.isFinite(start) && end > start ? (end - start) / 1000 : 30 * 24 * 3600;
     const resetsAt = Number.isFinite(end) ? new Date(end).toISOString() : null;
-    const month = utilization => ({ utilization, resets_at: resetsAt, total });
+    const month = utilization => ({utilization, resets_at: resetsAt, total});
 
-    // auto is for first-party cursor models, api is for other models
-    // api might be missing if you use the Start plan
-    // and i think teams are different but I don't use them so I don't know
-    let auto = cursorPoolPercent(pools, 'autoPercentUsed');
-    let api = cursorPoolPercent(pools, 'apiPercentUsed');
-    if (auto === null && api === null) {
-        const autoMsg = cursorMessagePercent(data.autoModelSelectedDisplayMessage);
-        const apiMsg = cursorMessagePercent(data.namedModelSelectedDisplayMessage);
-        if (autoMsg !== null && apiMsg !== null) {
-            auto = autoMsg;
-            api = apiMsg;
-        }
-    }
-    if (auto === null) {
-        if (!data.isUnlimited)
-            throw new UsageError('server', 'no plan usage in response');
-        auto = 0;
-    }
+    const {auto, api} = cursorPoolPercents(data, pools);
 
     const additional = [];
     const onDemand = individual.onDemand ?? data.teamUsage?.onDemand;
@@ -393,7 +399,7 @@ async function loadCursor(folder, session, cancellable) {
     if (spend !== null) {
         additional.push({
             name: _('On-demand'),
-            windows: [{ label: _('Spending limit'), win: month(spend), total }],
+            windows: [{label: _('Spending limit'), win: month(spend), total}],
         });
     }
 

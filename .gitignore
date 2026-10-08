@@ -1,2 +1,3 @@
 *.zip
-schemas/gschemas.compiled
+src/schemas/gschemas.compiled
+node_modules/

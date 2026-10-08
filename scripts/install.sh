@@ -23,8 +23,8 @@ fi
 
 rm -rf "$target_dir"
 mkdir -p "$(dirname "$target_dir")"
-cp -rT "$repo_dir" "$target_dir"
-rm -rf "$target_dir/.git"
+cp -rT "$repo_dir/src" "$target_dir"
+cp "$repo_dir/LICENSE" "$repo_dir/LICENSE.upstream" "$target_dir"
 glib-compile-schemas "$target_dir/schemas"
 
 if [ "$logout" = false ]; then

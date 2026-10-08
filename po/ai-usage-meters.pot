@@ -1,6 +1,7 @@
 # Translation template for AI Usage Meters.
 # Copyright (c) 2026 Baptiste-Pasquier (claude-usage-extension)
 # Copyright (c) 2026 Kevin Pita (codex-usage-extension)
+# Copyright (c) 2026 byte4day (AI-Usage-Extension)
 # Copyright (c) 2026 ganyuke (AI Usage Meters)
 # This file is distributed under the same license as the AI Usage Meters package.
 #
@@ -9,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AI Usage Meters 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/ganyuke/ai-usage-meters/issues\n"
-"POT-Creation-Date: 2026-10-08 04:02-0700\n"
+"POT-Creation-Date: 2026-10-08 12:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,404 +19,404 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: indicator.js:79
+#: src/indicator.js:79
 #, javascript-format
 msgid "%ds"
 msgstr ""
 
-#: indicator.js:82
+#: src/indicator.js:82
 #, javascript-format
 msgid "%dm"
 msgstr ""
 
-#: indicator.js:85
+#: src/indicator.js:85
 #, javascript-format
 msgid "%dh %dm"
 msgstr ""
 
-#: indicator.js:87
+#: src/indicator.js:87
 #, javascript-format
 msgid "%dd %dh"
 msgstr ""
 
-#: indicator.js:99
+#: src/indicator.js:99
 msgid "Resetting now"
 msgstr ""
 
-#: indicator.js:99
+#: src/indicator.js:99
 #, javascript-format
 msgid "Resets in %s"
 msgstr ""
 
-#: indicator.js:106
+#: src/indicator.js:106
 msgid "Expired"
 msgstr ""
 
-#: indicator.js:106
+#: src/indicator.js:106
 #, javascript-format
 msgid "Expires in %s"
 msgstr ""
 
-#: indicator.js:303
+#: src/indicator.js:303
 #, javascript-format
 msgid "%s Usage"
 msgstr ""
 
-#: indicator.js:438
+#: src/indicator.js:438
 msgid "Saved resets"
 msgstr ""
 
-#: indicator.js:445
+#: src/indicator.js:445
 msgid "See Full Usage"
 msgstr ""
 
-#: indicator.js:478
+#: src/indicator.js:478
 msgid "Refresh"
 msgstr ""
 
-#: indicator.js:479
+#: src/indicator.js:479
 msgid "Settings"
 msgstr ""
 
-#: indicator.js:602
+#: src/indicator.js:602
 #, javascript-format
 msgid "Open %s and sign in to see your usage here."
 msgstr ""
 
-#: indicator.js:603
+#: src/indicator.js:603
 #, javascript-format
 msgid ""
 "Looking for your sign-in in %s. You can pick a different folder in Settings."
 msgstr ""
 
-#: indicator.js:607
+#: src/indicator.js:607
 #, javascript-format
 msgid "Your %s sign-in has expired. Open %s to refresh it."
 msgstr ""
 
-#: indicator.js:608
+#: src/indicator.js:608
 #, javascript-format
 msgid "%s refreshes it on its own while you use it."
 msgstr ""
 
-#: indicator.js:612
+#: src/indicator.js:612
 #, javascript-format
 msgid "%s is signed in with an API key, which has no plan limits to show."
 msgstr ""
 
-#: indicator.js:613
+#: src/indicator.js:613
 #, javascript-format
 msgid "Sign in to %s with your ChatGPT account to see them here."
 msgstr ""
 
-#: indicator.js:619
+#: src/indicator.js:619
 #, javascript-format
 msgid "%s asked to check less often. Trying again at %s."
 msgstr ""
 
-#: indicator.js:620
+#: src/indicator.js:620
 #, javascript-format
 msgid "%s asked to check less often. Trying again soon."
 msgstr ""
 
-#: indicator.js:621
+#: src/indicator.js:621
 msgid "Showing your last numbers until then."
 msgstr ""
 
-#: indicator.js:625
+#: src/indicator.js:625
 #, javascript-format
 msgid "Can't reach %s right now. Trying again soon."
 msgstr ""
 
-#: indicator.js:627
+#: src/indicator.js:627
 #, javascript-format
 msgid "%s didn't send your usage this time. Trying again soon."
 msgstr ""
 
-#: indicator.js:636
+#: src/indicator.js:636
 msgid "Signed in with an API key"
 msgstr ""
 
-#: indicator.js:638
+#: src/indicator.js:638
 msgid "Not signed in"
 msgstr ""
 
-#: indicator.js:638
+#: src/indicator.js:638
 #, javascript-format
 msgid "Signed in through %s"
 msgstr ""
 
-#: indicator.js:673
+#: src/indicator.js:673
 msgid "Updating…"
 msgstr ""
 
-#: indicator.js:675
+#: src/indicator.js:675
 #, javascript-format
 msgid "Out of date, from %s"
 msgstr ""
 
-#: indicator.js:677
+#: src/indicator.js:677
 #, javascript-format
 msgid "Updated %s"
 msgstr ""
 
-#: indicator.js:679
+#: src/indicator.js:679
 #, javascript-format
 msgid "Tried at %s"
 msgstr ""
 
-#: indicator.js:681
+#: src/indicator.js:681
 msgid "Loading…"
 msgstr ""
 
-#: indicator.js:713
+#: src/indicator.js:713
 msgid "None right now"
 msgstr ""
 
-#: indicator.js:715
+#: src/indicator.js:715
 msgid "Resets you can use"
 msgstr ""
 
-#: indicator.js:732
+#: src/indicator.js:736
 msgid "Not used yet"
 msgstr ""
 
-#: indicator.js:737
+#: src/indicator.js:741
 #, javascript-format
 msgid "At this pace you'll run out in about %s"
 msgstr ""
 
-#: indicator.js:744
+#: src/indicator.js:748
 #, javascript-format
 msgid ""
 "At this pace you'll reach about %d%% by the reset, so you have room for "
 "about %sx more"
 msgstr ""
 
-#: indicator.js:750
+#: src/indicator.js:754
 #, javascript-format
 msgid "At this pace you'll reach about %d%% by the reset"
 msgstr ""
 
-#: indicator.js:760
+#: src/indicator.js:764
 #, javascript-format
 msgid "%d%% left"
 msgstr ""
 
-#: indicator.js:761
+#: src/indicator.js:765
 #, javascript-format
 msgid "%d%% used"
 msgstr ""
 
-#: indicator.js:803
+#: src/indicator.js:808
 msgid "Sign in"
 msgstr ""
 
-#: prefs.js:80
+#: src/prefs.js:80
 msgid "Sign-in"
 msgstr ""
 
-#: prefs.js:80
+#: src/prefs.js:80
 #, javascript-format
 msgid ""
 "Select the folder containing your %s credentials. These will be used to "
 "fetch your usage data from the %s API."
 msgstr ""
 
-#: prefs.js:84
+#: src/prefs.js:84
 msgid "Top bar"
 msgstr ""
 
-#: prefs.js:85
+#: src/prefs.js:85
 msgid "Show in top bar"
 msgstr ""
 
-#: prefs.js:85
+#: src/prefs.js:85
 #, javascript-format
 msgid "Turn this off if you don't use %s"
 msgstr ""
 
-#: prefs.js:87
+#: src/prefs.js:87
 msgid "Count"
 msgstr ""
 
-#: prefs.js:87
+#: src/prefs.js:87
 msgid "Show how much you used or how much is left"
 msgstr ""
 
-#: prefs.js:88
+#: src/prefs.js:88
 msgid "Used"
 msgstr ""
 
-#: prefs.js:89
+#: src/prefs.js:89
 msgid "Left"
 msgstr ""
 
-#: prefs.js:91
+#: src/prefs.js:91
 msgid "Show your plan"
 msgstr ""
 
-#: prefs.js:91
+#: src/prefs.js:91
 #, javascript-format
 msgid "For example %s"
 msgstr ""
 
-#: prefs.js:92
+#: src/prefs.js:92
 msgid "Show icon"
 msgstr ""
 
-#: prefs.js:93
+#: src/prefs.js:93
 msgid "Icon color"
 msgstr ""
 
-#: prefs.js:94
+#: src/prefs.js:94
 msgid "Color"
 msgstr ""
 
-#: prefs.js:95
+#: src/prefs.js:95
 msgid "White"
 msgstr ""
 
-#: prefs.js:99
+#: src/prefs.js:99
 msgid "Menu"
 msgstr ""
 
-#: prefs.js:109 prefs.js:117
+#: src/prefs.js:109 src/prefs.js:117
 msgid "Style"
 msgstr ""
 
-#: prefs.js:110 prefs.js:121
+#: src/prefs.js:110 src/prefs.js:121
 msgid "Ring + %"
 msgstr ""
 
-#: prefs.js:111 prefs.js:122
+#: src/prefs.js:111 src/prefs.js:122
 msgid "Percentage"
 msgstr ""
 
-#: prefs.js:112 prefs.js:123
+#: src/prefs.js:112 src/prefs.js:123
 msgid "Bar"
 msgstr ""
 
-#: prefs.js:113 prefs.js:124
+#: src/prefs.js:113 src/prefs.js:124
 msgid "Bar + %"
 msgstr ""
 
-#: prefs.js:118
+#: src/prefs.js:118
 #, javascript-format
 msgid "Outer ring %s, inner ring %s"
 msgstr ""
 
-#: prefs.js:119
+#: src/prefs.js:119
 msgid "Double ring + %"
 msgstr ""
 
-#: prefs.js:120
+#: src/prefs.js:120
 msgid "Double ring"
 msgstr ""
 
-#: prefs.js:126
+#: src/prefs.js:126
 msgid "Percentage follows"
 msgstr ""
 
-#: prefs.js:126
+#: src/prefs.js:126
 msgid "Which limit the number and single ring show"
 msgstr ""
 
-#: prefs.js:129
+#: src/prefs.js:129
 msgid "Closest to running out"
 msgstr ""
 
-#: prefs.js:135
+#: src/prefs.js:135
 #, javascript-format
 msgid "%s folder"
 msgstr ""
 
-#: prefs.js:138
+#: src/prefs.js:138
 msgid "Use the usual folder"
 msgstr ""
 
-#: prefs.js:142
+#: src/prefs.js:142
 msgid "Choose…"
 msgstr ""
 
-#: prefs.js:156
+#: src/prefs.js:156
 #, javascript-format
 msgid "Choose your %s folder"
 msgstr ""
 
-#: prefs.js:194
+#: src/prefs.js:193
 msgid "General"
 msgstr ""
 
-#: prefs.js:199
+#: src/prefs.js:198
 msgid "Check every"
 msgstr ""
 
-#: prefs.js:200
+#: src/prefs.js:199
 msgid "Seconds between usage checks. Opening a menu always checks immediately."
 msgstr ""
 
-#: prefs.js:204
+#: src/prefs.js:203
 msgid "Updates"
 msgstr ""
 
-#: prefs.js:206
+#: src/prefs.js:205
 msgid "Proxy"
 msgstr ""
 
-#: prefs.js:209
+#: src/prefs.js:208
 msgid "Network"
 msgstr ""
 
-#: prefs.js:210
+#: src/prefs.js:209
 #, javascript-format
 msgid "Leave empty unless your network needs a proxy, for example %s"
 msgstr ""
 
-#: services.js:15 services.js:26 usage.js:218
+#: src/services.js:15 src/services.js:26 src/usage.js:219
 msgid "5-hour limit"
 msgstr ""
 
-#: services.js:15 services.js:26 usage.js:148 usage.js:219
+#: src/services.js:15 src/services.js:26 src/usage.js:149 src/usage.js:220
 msgid "Weekly limit"
 msgstr ""
 
-#: services.js:16 services.js:27
+#: src/services.js:16 src/services.js:27
 msgid "Show per-model limits"
 msgstr ""
 
-#: services.js:16 services.js:27
+#: src/services.js:16 src/services.js:27
 msgid "Some plans have separate limits for specific models"
 msgstr ""
 
-#: services.js:37
+#: src/services.js:37
 msgid "Cursor Models"
 msgstr ""
 
-#: services.js:37
+#: src/services.js:37
 msgid "Other Models"
 msgstr ""
 
-#: services.js:38
+#: src/services.js:38
 msgid "Show on-demand spending"
 msgstr ""
 
-#: services.js:38
+#: src/services.js:38
 msgid "The spending limit you set after included usage runs out"
 msgstr ""
 
-#: usage.js:216
+#: src/usage.js:217
 msgid "Other"
 msgstr ""
 
-#: usage.js:230
+#: src/usage.js:231
 msgid "Full reset"
 msgstr ""
 
-#: usage.js:395
+#: src/usage.js:401
 msgid "On-demand"
 msgstr ""
 
-#: usage.js:396
+#: src/usage.js:402
 msgid "Spending limit"
 msgstr ""

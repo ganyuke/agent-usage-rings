@@ -6,8 +6,8 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-PACKAGE=$(jq -r '.name' metadata.json)
-VERSION=$(jq -r '."version-name" // .version' metadata.json)
+PACKAGE=$(jq -r '.name' src/metadata.json)
+VERSION=$(jq -r '."version-name" // .version' src/metadata.json)
 BUG_ADDRESS="https://github.com/ganyuke/ai-usage-meters/issues"
 YEAR=$(date +%Y)
 
@@ -26,6 +26,7 @@ awk -v pkg="$PACKAGE" -v year="$YEAR" '
 /^# Copyright \(C\)/ {
     print "# Copyright (c) 2026 Baptiste-Pasquier (claude-usage-extension)"
     print "# Copyright (c) 2026 Kevin Pita (codex-usage-extension)"
+    print "# Copyright (c) 2026 byte4day (AI-Usage-Extension)"
     print "# Copyright (c) " year " ganyuke (" pkg ")"
     next
 }

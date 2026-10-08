@@ -116,13 +116,13 @@ export default class AiUsagePreferences extends ExtensionPreferences {
         return [
             comboRow(settings, 'display-mode', _('Style'),
                 _('Outer ring %s, inner ring %s').format(service.limits[0], service.limits[1]), [
-                ['rings', _('Double ring + %')],
-                ['rings-only', _('Double ring')],
-                ['ring', _('Ring + %')],
-                ['text', _('Percentage')],
-                ['bar', _('Bar')],
-                ['both', _('Bar + %')],
-            ]),
+                    ['rings', _('Double ring + %')],
+                    ['rings-only', _('Double ring')],
+                    ['ring', _('Ring + %')],
+                    ['text', _('Percentage')],
+                    ['bar', _('Bar')],
+                    ['both', _('Bar + %')],
+                ]),
             comboRow(settings, 'panel-window', _('Percentage follows'), _('Which limit the number and single ring show'), [
                 ['primary', service.limits[0]],
                 ['secondary', service.limits[1]],
@@ -165,9 +165,8 @@ export default class AiUsagePreferences extends ExtensionPreferences {
                     // Picking the default folder again resets/clears the setting
                     settings.set_string('folder', path === service.defaultFolder() ? '' : path ?? '');
                 } catch (e) {
-                    if (!e.matches(Gtk.DialogError, Gtk.DialogError.DISMISSED)) {
+                    if (!e.matches(Gtk.DialogError, Gtk.DialogError.DISMISSED))
                         console.error('Failed to select folder:', e);
-                    }
                 }
             });
         };

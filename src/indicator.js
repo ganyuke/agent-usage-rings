@@ -135,52 +135,10 @@ function exhaustSeconds(util, resetsAt, totalSeconds) {
     return toExhaust > 0 && toExhaust < remaining ? toExhaust : null;
 }
 
-class Meter {
-    constructor(name) {
-        this.root = new St.BoxLayout(verticalBox({style_class: 'aiu-meter'}));
-
-        const row = new St.BoxLayout({style_class: 'aiu-meter-row'});
-        this._name = new St.Label({text: name, style_class: 'aiu-meter-name', x_expand: true});
-        this._pct = new St.Label({text: '…', style_class: 'aiu-meter-pct'});
-        row.add_child(this._name);
-        row.add_child(this._pct);
-
-        this._bar = new LevelBar({style_class: 'aiu-level'});
-
-        this._caption = new St.Label({text: '', style_class: 'aiu-caption'});
-        this._note = new St.Label({text: '', style_class: 'aiu-note'});
-        this._note.clutter_text.line_wrap = true;
-        this._note.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
-        this._note.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-
-        this.root.add_child(row);
-        this.root.add_child(this._bar);
-        this.root.add_child(this._caption);
-        this.root.add_child(this._note);
-    }
-
-    setValue({util, colorUtil, pctText, caption, note}) {
-        this._pct.text = pctText;
-        this._bar.setValue({util, colorUtil});
-        this._caption.text = caption ?? '';
-        this._caption.visible = !!caption;
-        this._note.text = note?.text ?? '';
-        this._note.visible = !!note?.text;
-        this._note.style_class = note?.warn ? 'aiu-note aiu-note-warn' : 'aiu-note';
-    }
-
-    setMuted() {
-        this._pct.text = '–';
-        this._bar.setValue(null);
-        this._caption.visible = false;
-        this._note.visible = false;
-    }
-}
-
 const Ring = GObject.registerClass(
 class Ring extends St.DrawingArea {
-    _init() {
-        super._init({
+    constructor() {
+        super({
             style_class: 'aiu-ring',
             width: RING_SIZE,
             height: RING_SIZE,
@@ -208,8 +166,8 @@ class Ring extends St.DrawingArea {
 // it's so pretty and cute :) i love it so much
 const DoubleRing = GObject.registerClass(
 class DoubleRing extends St.DrawingArea {
-    _init() {
-        super._init({
+    constructor() {
+        super({
             style_class: 'aiu-rings',
             width: DOUBLE_RING_SIZE,
             height: DOUBLE_RING_SIZE,
@@ -258,8 +216,8 @@ function drawRing(cr, actor, cx, cy, radius, width, value) {
 // the original Claude extension.
 const LevelBar = GObject.registerClass(
 class LevelBar extends St.DrawingArea {
-    _init(params) {
-        super._init(params);
+    constructor(params) {
+        super(params);
         this._value = null;
     }
 
@@ -295,6 +253,48 @@ function barPath(cr, w, h) {
     cr.arc(r, r, r, Math.PI / 2, 3 * Math.PI / 2);
     cr.arc(w - r, r, r, -Math.PI / 2, Math.PI / 2);
     cr.closePath();
+}
+
+class Meter {
+    constructor(name) {
+        this.root = new St.BoxLayout(verticalBox({style_class: 'aiu-meter'}));
+
+        const row = new St.BoxLayout({style_class: 'aiu-meter-row'});
+        this._name = new St.Label({text: name, style_class: 'aiu-meter-name', x_expand: true});
+        this._pct = new St.Label({text: '…', style_class: 'aiu-meter-pct'});
+        row.add_child(this._name);
+        row.add_child(this._pct);
+
+        this._bar = new LevelBar({style_class: 'aiu-level'});
+
+        this._caption = new St.Label({text: '', style_class: 'aiu-caption'});
+        this._note = new St.Label({text: '', style_class: 'aiu-note'});
+        this._note.clutter_text.line_wrap = true;
+        this._note.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+        this._note.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+
+        this.root.add_child(row);
+        this.root.add_child(this._bar);
+        this.root.add_child(this._caption);
+        this.root.add_child(this._note);
+    }
+
+    setValue({util, colorUtil, pctText, caption, note}) {
+        this._pct.text = pctText;
+        this._bar.setValue({util, colorUtil});
+        this._caption.text = caption ?? '';
+        this._caption.visible = !!caption;
+        this._note.text = note?.text ?? '';
+        this._note.visible = !!note?.text;
+        this._note.style_class = note?.warn ? 'aiu-note aiu-note-warn' : 'aiu-note';
+    }
+
+    setMuted() {
+        this._pct.text = '–';
+        this._bar.setValue(null);
+        this._caption.visible = false;
+        this._note.visible = false;
+    }
 }
 
 export const UsageIndicator = GObject.registerClass(
@@ -729,7 +729,11 @@ class UsageIndicator extends PanelMenu.Button {
         const util = win.utilization;
         const proj = projectedUtil(util, win.resets_at, totalSeconds);
         const shown = this._showRemaining() ? 100 - util : util;
-        const caption = win.resets_at ? resetCaption(win.resets_at) : (util > 0 ? '' : _('Not used yet'));
+        let caption = '';
+        if (win.resets_at)
+            caption = resetCaption(win.resets_at);
+        else if (util <= 0)
+            caption = _('Not used yet');
 
         let note = null;
         const exhaust = exhaustSeconds(util, win.resets_at, totalSeconds);
@@ -800,7 +804,10 @@ class UsageIndicator extends PanelMenu.Button {
         this._panelTier.visible = !!usage?.tier && this._settings.get_boolean('show-tier');
 
         if (!usage) {
-            this._panelPct.text = signInProblem ? _('Sign in') : (this._problem ? '!' : '…');
+            if (signInProblem)
+                this._panelPct.text = _('Sign in');
+            else
+                this._panelPct.text = this._problem ? '!' : '…';
             this._panelPct.style_class = this._problem ? 'aiu-panel-pct usage-high' : 'aiu-panel-pct';
             this._ring.setValue(null);
             this._rings.setValues(null, null);
@@ -849,7 +856,8 @@ class UsageIndicator extends PanelMenu.Button {
             GLib.source_remove(this._timerId);
         if (this._countdownId)
             GLib.source_remove(this._countdownId);
-        this._timerId = this._countdownId = 0;
+        this._timerId = 0;
+        this._countdownId = 0;
         this._settings.disconnectObject(this);
         this._main.disconnectObject(this);
         this.menu.disconnectObject(this);

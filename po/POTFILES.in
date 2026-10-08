@@ -1,5 +1,5 @@
-extension.js
-indicator.js
-prefs.js
-services.js
-usage.js
+src/extension.js
+src/indicator.js
+src/prefs.js
+src/services.js
+src/usage.js
