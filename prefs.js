@@ -1,11 +1,15 @@
+// SPDX-FileCopyrightText: 2026 ganyuke
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {SERVICES, serviceFolder, tildePath} from './services.js';
+import {getServices, serviceFolder, tildePath} from './services.js';
 
 function comboRow(settings, key, title, subtitle, options) {
     const row = new Adw.ComboRow({
@@ -48,7 +52,7 @@ export default class AiUsagePreferences extends ExtensionPreferences {
         Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
             .add_search_path(`${this.path}/icons`);
 
-        for (const service of SERVICES)
+        for (const service of getServices(_))
             window.add(this._servicePage(window, service, this.getSettings(`${main.schema_id}.${service.id}`)));
         window.add(this._generalPage(main));
 
@@ -70,29 +74,29 @@ export default class AiUsagePreferences extends ExtensionPreferences {
         const page = new Adw.PreferencesPage({
             name: service.id,
             title: service.name,
-            icon_name: `ai-usage-${service.id}`,
+            icon_name: `${service.id}`,
         });
 
-        page.add(group('Sign-in', `Uses your ${service.app} sign-in. Pick a different folder only if you moved it.`, [
+        page.add(group(_('Sign-in'), _('Select the folder containing your %s credentials. These will be used to fetch your usage data from the %s API.').format(service.app, service.name), [
             this._folderRow(window, service, settings),
         ]));
 
-        page.add(group('Top bar', null, [
-            switchRow(settings, 'show-in-panel', 'Show in top bar', `Turn this off if you don't use ${service.name}`),
+        page.add(group(_('Top bar'), null, [
+            switchRow(settings, 'show-in-panel', _('Show in top bar'), _("Turn this off if you don't use %s").format(service.name)),
             ...this._limitRows(service, settings),
-            comboRow(settings, 'usage-display', 'Count', 'Show how much you used or how much is left', [
-                ['used', 'Used'],
-                ['remaining', 'Left'],
+            comboRow(settings, 'usage-display', _('Count'), _('Show how much you used or how much is left'), [
+                ['used', _('Used')],
+                ['remaining', _('Left')],
             ]),
-            switchRow(settings, 'show-tier', 'Show your plan', `For example ${service.planExamples}`),
-            switchRow(settings, 'show-icon', 'Show icon', null),
-            comboRow(settings, 'icon-style', 'Icon color', null, [
-                ['color', 'Color'],
-                ['monochrome', 'White'],
+            switchRow(settings, 'show-tier', _('Show your plan'), _('For example %s').format(service.planExamples)),
+            switchRow(settings, 'show-icon', _('Show icon'), null),
+            comboRow(settings, 'icon-style', _('Icon color'), null, [
+                ['color', _('Color')],
+                ['monochrome', _('White')],
             ]),
         ]));
 
-        page.add(group('Menu', null, [
+        page.add(group(_('Menu'), null, [
             switchRow(settings, 'show-additional-limits', ...service.extraLimits),
         ]));
 
@@ -102,40 +106,40 @@ export default class AiUsagePreferences extends ExtensionPreferences {
     // Rings and "follows" only make sense with two limits to choose from.
     _limitRows(service, settings) {
         if (service.limits.length === 1) {
-            return [comboRow(settings, 'display-mode', 'Style', null, [
-                ['ring', 'Ring + %'],
-                ['text', 'Percentage'],
-                ['bar', 'Bar'],
-                ['both', 'Bar + %'],
+            return [comboRow(settings, 'display-mode', _('Style'), null, [
+                ['ring', _('Ring + %')],
+                ['text', _('Percentage')],
+                ['bar', _('Bar')],
+                ['both', _('Bar + %')],
             ])];
         }
         return [
-            comboRow(settings, 'display-mode', 'Style',
-                `Outer ring ${service.limits[0]}, inner ring ${service.limits[1]}`, [
-                ['rings', 'Double ring + %'],
-                ['rings-only', 'Double ring'],
-                ['ring', 'Ring + %'],
-                ['text', 'Percentage'],
-                ['bar', 'Bar'],
-                ['both', 'Bar + %'],
+            comboRow(settings, 'display-mode', _('Style'),
+                _('Outer ring %s, inner ring %s').format(service.limits[0], service.limits[1]), [
+                ['rings', _('Double ring + %')],
+                ['rings-only', _('Double ring')],
+                ['ring', _('Ring + %')],
+                ['text', _('Percentage')],
+                ['bar', _('Bar')],
+                ['both', _('Bar + %')],
             ]),
-            comboRow(settings, 'panel-window', 'Percentage follows', 'Which limit the number and single ring show', [
+            comboRow(settings, 'panel-window', _('Percentage follows'), _('Which limit the number and single ring show'), [
                 ['primary', service.limits[0]],
                 ['secondary', service.limits[1]],
-                ['max', 'Closest to running out'],
+                ['max', _('Closest to running out')],
             ]),
         ];
     }
 
     _folderRow(window, service, settings) {
-        const row = new Adw.ActionRow({title: `${service.app} folder`, use_markup: false});
+        const row = new Adw.ActionRow({title: _('%s folder').format(service.app), use_markup: false});
         const reset = new Gtk.Button({
             icon_name: 'edit-undo-symbolic',
-            tooltip_text: 'Use the usual folder',
+            tooltip_text: _('Use the usual folder'),
             valign: Gtk.Align.CENTER,
             css_classes: ['flat'],
         });
-        const choose = new Gtk.Button({label: 'Choose…', valign: Gtk.Align.CENTER});
+        const choose = new Gtk.Button({label: _('Choose…'), valign: Gtk.Align.CENTER});
         row.add_suffix(reset);
         row.add_suffix(choose);
 
@@ -147,21 +151,39 @@ export default class AiUsagePreferences extends ExtensionPreferences {
         settings.connect('changed::folder', sync);
 
         reset.connect('clicked', () => settings.reset('folder'));
-        choose.connect('clicked', () => {
+        const pick = initialFolder => {
             const dialog = new Gtk.FileDialog({
-                title: `Choose your ${service.app} folder`,
-                initial_folder: Gio.File.new_for_path(serviceFolder(service, settings)),
+                title: _('Choose your %s folder').format(service.app),
+                initial_folder: initialFolder,
             });
-            dialog.select_folder(window, null, (_dialog, result) => {
+
+            dialog.select_folder(window, null, (source, result) => {
                 try {
-                    const folder = dialog.select_folder_finish(result);
-                    const path = folder?.get_path();
-                    // Picking the usual folder again goes back to following it.
+                    const folder = source.select_folder_finish(result);
+                    const path = folder.get_path();
+
+                    // Picking the default folder again resets/clears the setting
                     settings.set_string('folder', path === service.defaultFolder() ? '' : path ?? '');
-                } catch {
-                    // Dismissed.
+                } catch (e) {
+                    if (!e.matches(Gtk.DialogError, Gtk.DialogError.DISMISSED)) {
+                        console.error('Failed to select folder:', e);
+                    }
                 }
             });
+        };
+
+        choose.connect('clicked', () => {
+            // prevent Nautilus from complaining about the initial folder not existing
+            const current = Gio.File.new_for_path(serviceFolder(service, settings));
+            current.query_info_async('standard::type', Gio.FileQueryInfoFlags.NONE,
+                GLib.PRIORITY_DEFAULT, null, (file, result) => {
+                    try {
+                        file.query_info_finish(result);
+                        pick(current);
+                    } catch {
+                        pick(null);
+                    }
+                });
         });
         return row;
     }
@@ -169,23 +191,24 @@ export default class AiUsagePreferences extends ExtensionPreferences {
     _generalPage(main) {
         const page = new Adw.PreferencesPage({
             name: 'general',
-            title: 'General',
+            title: _('General'),
             icon_name: 'preferences-system-symbolic',
         });
 
         const refresh = new Adw.SpinRow({
-            title: 'Check every',
-            subtitle: 'Seconds between usage checks. Opening a menu always checks right away.',
+            title: _('Check every'),
+            subtitle: _('Seconds between usage checks. Opening a menu always checks immediately.'),
             adjustment: new Gtk.Adjustment({lower: 30, upper: 3600, step_increment: 30, page_increment: 300}),
         });
         main.bind('refresh-interval', refresh, 'value', Gio.SettingsBindFlags.DEFAULT);
-        page.add(group('Updates', null, [refresh]));
+        page.add(group(_('Updates'), null, [refresh]));
 
-        const proxy = new Adw.EntryRow({title: 'Proxy', show_apply_button: true});
+        const proxy = new Adw.EntryRow({title: _('Proxy'), show_apply_button: true});
         proxy.set_text(main.get_string('proxy-url'));
         proxy.connect('apply', () => main.set_string('proxy-url', proxy.get_text().trim()));
-        page.add(group('Network',
-            'Leave empty unless your network needs a proxy, for example http://localhost:11809', [proxy]));
+        page.add(group(_('Network'),
+            _('Leave empty unless your network needs a proxy, for example %s').replace('%s', 'http://localhost:11809'),
+            [proxy]));
         return page;
     }
 }

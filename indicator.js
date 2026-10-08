@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 ganyuke
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
@@ -10,22 +13,23 @@ import Cairo from 'cairo';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Config from 'resource:///org/gnome/shell/misc/config.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {FIVE_HOURS, SEVEN_DAYS, LOADERS, UsageError, isCancelled} from './usage.js';
-import {serviceFolder, tildePath} from './services.js';
+import {EXTENSION_NAME, serviceFolder, tildePath} from './services.js';
 
-const RING_SIZE = 18;
-const RING_WIDTH = 3;
-const DOUBLE_RING_SIZE = 20;
-const DOUBLE_RING_WIDTH = 2.5;
-const DOUBLE_RING_GAP = 1.5;
-const SHELL_MAJOR = parseInt(Config.PACKAGE_VERSION.split('.')[0], 10);
-const SIGN_IN_PROBLEMS = ['signed-out', 'expired', 'api-key'];
-// Opening the menu refreshes only if the last try is older than this.
-const MENU_REFRESH_GAP = 60;
+const RING_SIZE = 18; // size of the single ring
+const RING_WIDTH = 3; // width of the single ring
+const DOUBLE_RING_SIZE = 20; // size of the double ring
+const DOUBLE_RING_WIDTH = 2.5; // width of the rings
+const DOUBLE_RING_GAP = 1.5; // gap between the two rings
+const SHELL_MAJOR = parseInt(Config.PACKAGE_VERSION.split('.')[0], 10); // GNOME major version
+const SIGN_IN_PROBLEMS = ['signed-out', 'expired', 'api-key']; // possible reasons for a sign-in problem
+const MENU_REFRESH_GAP = 60; // debounce for refreshes caused by opening a service's menu
 
-// St.BoxLayout:vertical is deprecated since GNOME 48 in favour of :orientation,
-// which does not exist on 46/47.
+// St.BoxLayout:vertical is deprecated since GNOME 48
+// in favour of :orientation, which does not exist on 46/47.
+// Ubuntu 24.04 is still on GNOME 46, so it's kinda important to keep this around.
 function verticalBox(params = {}) {
     return SHELL_MAJOR >= 48
         ? {...params, orientation: Clutter.Orientation.VERTICAL}
@@ -72,15 +76,15 @@ function colorRgb(c) {
 function humanDuration(seconds) {
     const s = Math.max(0, Math.floor(seconds));
     if (s < 60)
-        return `${s}s`;
+        return _('%ds').format(s);
     const mins = Math.round(s / 60);
     if (mins < 60)
-        return `${mins}m`;
+        return _('%dm').format(mins);
     const hrs = Math.floor(mins / 60);
     if (hrs < 24)
-        return `${hrs}h ${mins % 60}m`;
+        return _('%dh %dm').format(hrs, mins % 60);
     const days = Math.floor(hrs / 24);
-    return `${days}d ${hrs % 24}h`;
+    return _('%dd %dh').format(days, hrs % 24);
 }
 
 function secondsUntil(iso) {
@@ -92,14 +96,14 @@ function resetCaption(iso) {
     const left = secondsUntil(iso);
     if (left === null)
         return '';
-    return left <= 0 ? 'Resetting now' : `Resets in ${humanDuration(left)}`;
+    return left <= 0 ? _('Resetting now') : _('Resets in %s').format(humanDuration(left));
 }
 
 function expiresCaption(iso) {
     const left = secondsUntil(iso);
     if (left === null)
         return '';
-    return left <= 0 ? 'Expired' : `Expires in ${humanDuration(left)}`;
+    return left <= 0 ? _('Expired') : _('Expires in %s').format(humanDuration(left));
 }
 
 // Usage extrapolated to the end of the window at the current pace.
@@ -200,7 +204,8 @@ class Ring extends St.DrawingArea {
     }
 });
 
-// Two concentric rings: outer is the first limit, inner the second.
+// the pretty concentric double ring for the two limits!!
+// it's so pretty and cute :) i love it so much
 const DoubleRing = GObject.registerClass(
 class DoubleRing extends St.DrawingArea {
     _init() {
@@ -248,8 +253,9 @@ function drawRing(cr, actor, cx, cy, radius, width, value) {
     }
 }
 
-// A rounded bar filled to its allocated width, so 100% always reaches the end
-// whatever the menu width or display scale.
+// rounded bar for percentage fill in service menu
+// the fill should stretch all the way to the end of the bar, unlike in
+// the original Claude extension.
 const LevelBar = GObject.registerClass(
 class LevelBar extends St.DrawingArea {
     _init(params) {
@@ -294,16 +300,16 @@ function barPath(cr, w, h) {
 export const UsageIndicator = GObject.registerClass(
 class UsageIndicator extends PanelMenu.Button {
     _init(service, {path, settings, mainSettings, openPreferences}) {
-        super._init(0.0, `${service.name} Usage`);
+        super._init(0.0, _('%s Usage').format(service.name));
 
         this._service = service;
+        this._path = path;
         this._oneLimit = service.limits.length === 1;
         this._load = LOADERS[service.id];
         this._settings = settings;
         this._main = mainSettings;
         this._openPreferences = openPreferences;
-        this._iconFile = Gio.icon_new_for_string(GLib.build_filenamev([path, 'icons', `ai-usage-${service.id}.png`]));
-        this._linkIcon = Gio.icon_new_for_string(GLib.build_filenamev([path, 'icons', 'external-link-symbolic.svg']));
+        this._iconFile = Gio.icon_new_for_string(GLib.build_filenamev([path, 'icons', `${service.id}.png`]));
         this._cancellable = new Gio.Cancellable();
         this._session = this._createSession();
         this._usage = null;
@@ -429,19 +435,18 @@ class UsageIndicator extends PanelMenu.Button {
         root.add_child(this._additionalBox);
 
         this._resetsBox = new St.BoxLayout(verticalBox());
-        this._resetsBox.add_child(new St.Label({text: 'Saved resets', style_class: 'aiu-heading'}));
+        this._resetsBox.add_child(new St.Label({text: _('Saved resets'), style_class: 'aiu-heading'}));
         this._resetList = new St.BoxLayout(verticalBox({style_class: 'aiu-reset-list'}));
         this._resetsBox.add_child(this._resetList);
         root.add_child(this._resetsBox);
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        // Adwaita has no external-link icon (libadwaita bundles its own), so
-        // ship one. The -symbolic.svg name makes St recolor it like menu text.
-        const openUsage = new PopupMenu.PopupMenuItem('See Full Usage');
+        const openUsage = new PopupMenu.PopupMenuItem(_('See Full Usage'));
         openUsage.label.x_expand = true;
         openUsage.add_child(new St.Icon({
-            gicon: this._linkIcon,
+            // womp womp have to copy over libadwaita's icons manually :(
+            gicon: Gio.icon_new_for_string(GLib.build_filenamev([this._path, 'icons', 'external-link-symbolic.svg'])),
             style_class: 'popup-menu-icon',
             y_align: Clutter.ActorAlign.CENTER,
         }));
@@ -470,8 +475,8 @@ class UsageIndicator extends PanelMenu.Button {
             button.connect('clicked', onClicked);
             footerItem.add_child(button);
         };
-        iconButton('view-refresh-symbolic', 'Refresh', () => this.refresh());
-        iconButton('emblem-system-symbolic', 'Settings', () => {
+        iconButton('view-refresh-symbolic', _('Refresh'), () => this.refresh());
+        iconButton('emblem-system-symbolic', _('Settings'), () => {
             this.menu.close();
             this._openPreferences(this._service.id);
         });
@@ -532,7 +537,7 @@ class UsageIndicator extends PanelMenu.Button {
             if (isCancelled(e))
                 return;
             if (!(e instanceof UsageError))
-                console.error(`AI Usage: ${this._service.name} refresh failed: ${e.message}`);
+                console.error(`${EXTENSION_NAME}: ${this._service.name} refresh failed: ${e.message}`);
             if (e instanceof UsageError && e.kind === 'rate-limited')
                 this._settings.set_int64('paused-until', Math.ceil(nowSeconds() + e.retryAfter));
             this.showProblem(e instanceof UsageError ? e.kind : 'server');
@@ -561,7 +566,7 @@ class UsageIndicator extends PanelMenu.Button {
                 this._updatedAt = GLib.DateTime.new_from_unix_local(saved.updatedAt);
             }
         } catch (e) {
-            console.error(`AI Usage: ignoring saved ${this._service.name} usage: ${e.message}`);
+            console.error(`${EXTENSION_NAME}: ignoring saved ${this._service.name} usage: ${e.message}`);
         }
     }
 
@@ -594,31 +599,32 @@ class UsageIndicator extends PanelMenu.Button {
         switch (kind) {
         case 'signed-out':
             return {
-                text: `Open ${app} and sign in to see your usage here.`,
-                hint: `Looking for your sign-in in ${folder}. You can pick a different folder in Settings.`,
+                text: _('Open %s and sign in to see your usage here.').format(app),
+                hint: _('Looking for your sign-in in %s. You can pick a different folder in Settings.').format(folder),
             };
         case 'expired':
             return {
-                text: `Your ${app} sign-in has expired. Open ${app} to refresh it.`,
-                hint: `${app} refreshes it on its own while you use it.`,
+                text: _('Your %s sign-in has expired. Open %s to refresh it.').format(app, app),
+                hint: _('%s refreshes it on its own while you use it.').format(app),
             };
         case 'api-key':
             return {
-                text: `${app} is signed in with an API key, which has no plan limits to show.`,
-                hint: `Sign in to ${app} with your ChatGPT account to see them here.`,
+                text: _('%s is signed in with an API key, which has no plan limits to show.').format(app),
+                hint: _('Sign in to %s with your ChatGPT account to see them here.').format(app),
             };
         case 'rate-limited': {
             const until = this._pausedUntil();
-            const at = until > nowSeconds() ? ` at ${clockTime(GLib.DateTime.new_from_unix_local(until))}` : ' soon';
             return {
-                text: `${name} asked to check less often. Trying again${at}.`,
-                hint: this._usage ? 'Showing your last numbers until then.' : '',
+                text: until > nowSeconds()
+                    ? _('%s asked to check less often. Trying again at %s.').format(name, clockTime(GLib.DateTime.new_from_unix_local(until)))
+                    : _('%s asked to check less often. Trying again soon.').format(name),
+                hint: this._usage ? _('Showing your last numbers until then.') : '',
             };
         }
         case 'network':
-            return {text: `Can't reach ${name} right now. Trying again soon.`, hint: ''};
+            return {text: _("Can't reach %s right now. Trying again soon.").format(name), hint: ''};
         default:
-            return {text: `${name} didn't send your usage this time. Trying again soon.`, hint: ''};
+            return {text: _("%s didn't send your usage this time. Trying again soon.").format(name), hint: ''};
         }
     }
 
@@ -627,9 +633,9 @@ class UsageIndicator extends PanelMenu.Button {
         const signInProblem = SIGN_IN_PROBLEMS.includes(this._problem);
 
         if (this._problem === 'api-key')
-            this._subtitle.text = 'Signed in with an API key';
+            this._subtitle.text = _('Signed in with an API key');
         else
-            this._subtitle.text = signInProblem ? 'Not signed in' : `Signed in through ${this._service.app}`;
+            this._subtitle.text = signInProblem ? _('Not signed in') : _('Signed in through %s').format(this._service.app);
         // Empty bars add nothing until there's a sign-in to read.
         this._limitsBox.visible = !signInProblem;
         this._tierPill.text = usage?.tier ?? '';
@@ -664,15 +670,15 @@ class UsageIndicator extends PanelMenu.Button {
         const stale = !!this._usage && !!this._problem;
         this._updatedLabel.style_class = stale ? 'aiu-updated aiu-updated-stale' : 'aiu-updated';
         if (this._refreshing)
-            this._updatedLabel.text = 'Updating…';
+            this._updatedLabel.text = _('Updating…');
         else if (stale)
-            this._updatedLabel.text = `Out of date, from ${clockTime(this._updatedAt)}`;
+            this._updatedLabel.text = _('Out of date, from %s').format(clockTime(this._updatedAt));
         else if (this._usage)
-            this._updatedLabel.text = `Updated ${clockTime(this._updatedAt)}`;
+            this._updatedLabel.text = _('Updated %s').format(clockTime(this._updatedAt));
         else if (this._triedAt)
-            this._updatedLabel.text = `Tried at ${clockTime(this._triedAt)}`;
+            this._updatedLabel.text = _('Tried at %s').format(clockTime(this._triedAt));
         else
-            this._updatedLabel.text = 'Loading…';
+            this._updatedLabel.text = _('Loading…');
     }
 
     _renderAdditional(usage) {
@@ -704,9 +710,9 @@ class UsageIndicator extends PanelMenu.Button {
             this._resetList.add_child(row);
         };
         if (!count)
-            this._resetList.add_child(new St.Label({text: 'None right now', style_class: 'aiu-reset-empty'}));
+            this._resetList.add_child(new St.Label({text: _('None right now'), style_class: 'aiu-reset-empty'}));
         else if (details.length === 0)
-            addRow('Resets you can use', `${count}`);
+            addRow(_('Resets you can use'), `${count}`);
         else
             details.forEach(d => addRow(d.title, expiresCaption(d.expiresAt)));
     }
@@ -723,25 +729,36 @@ class UsageIndicator extends PanelMenu.Button {
         const util = win.utilization;
         const proj = projectedUtil(util, win.resets_at, totalSeconds);
         const shown = this._showRemaining() ? 100 - util : util;
-        const caption = win.resets_at ? resetCaption(win.resets_at) : (util > 0 ? '' : 'Not used yet');
+        const caption = win.resets_at ? resetCaption(win.resets_at) : (util > 0 ? '' : _('Not used yet'));
 
         let note = null;
         const exhaust = exhaustSeconds(util, win.resets_at, totalSeconds);
         if (exhaust !== null) {
-            note = {text: `At this pace you'll run out in about ${humanDuration(exhaust)}`, warn: true};
+            note = {text: _("At this pace you'll run out in about %s").format(humanDuration(exhaust)), warn: true};
         } else if (util < 100 && Math.round(proj) > Math.round(util)) {
-            let text = `At this pace you'll reach about ${Math.min(100, Math.round(proj))}% by the reset`;
+            const projected = Math.min(100, Math.round(proj));
             if (proj > 0 && proj < 75) {
                 const room = 100 / proj;
-                text += `, so you have room for about ${room >= 10 ? Math.round(room) : room.toFixed(1)}x more`;
+                const multiplier = room >= 10 ? Math.round(room) : room.toFixed(1);
+                note = {
+                    text: _("At this pace you'll reach about %d%% by the reset, so you have room for about %sx more")
+                        .format(projected, multiplier),
+                    warn: severity(proj) !== 'usage-low',
+                };
+            } else {
+                note = {
+                    text: _("At this pace you'll reach about %d%% by the reset").format(projected),
+                    warn: severity(proj) !== 'usage-low',
+                };
             }
-            note = {text, warn: severity(proj) !== 'usage-low'};
         }
 
         meter.setValue({
             util,
             colorUtil: proj,
-            pctText: `${Math.round(shown)}% ${this._showRemaining() ? 'left' : 'used'}`,
+            pctText: this._showRemaining()
+                ? _('%d%% left').format(Math.round(shown))
+                : _('%d%% used').format(Math.round(shown)),
             caption,
             note,
         });
@@ -783,7 +800,7 @@ class UsageIndicator extends PanelMenu.Button {
         this._panelTier.visible = !!usage?.tier && this._settings.get_boolean('show-tier');
 
         if (!usage) {
-            this._panelPct.text = signInProblem ? 'Sign in' : (this._problem ? '!' : '…');
+            this._panelPct.text = signInProblem ? _('Sign in') : (this._problem ? '!' : '…');
             this._panelPct.style_class = this._problem ? 'aiu-panel-pct usage-high' : 'aiu-panel-pct';
             this._ring.setValue(null);
             this._rings.setValues(null, null);

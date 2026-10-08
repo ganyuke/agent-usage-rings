@@ -1,15 +1,17 @@
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+// SPDX-FileCopyrightText: 2026 ganyuke
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-import {SERVICES} from './services.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+import {getServices} from './services.js';
 import {UsageIndicator} from './indicator.js';
 
-// One extension, one top bar button per service.
-export default class AiUsageExtension extends Extension {
+export default class AiUsageMetersExtension extends Extension {
     enable() {
         this._main = this.getSettings();
         this._indicators = new Map();
-        this._serviceSettings = SERVICES.map(service => {
+        this._serviceSettings = getServices(_).map(service => {
             const settings = this.getSettings(`${this._main.schema_id}.${service.id}`);
             settings.connectObject('changed::show-in-panel', () => this._sync(service, settings), this);
             this._sync(service, settings);
@@ -45,19 +47,19 @@ export default class AiUsageExtension extends Extension {
         }
     }
 
-    // The settings window watches prefs-page and switches to that tab,
-    // even when it's already open. Clearing it first makes a repeat click
-    // on the same service still count as a change.
+    // watch the prefs-page setting and open the preferences window when it changes
+    // so opening the settings from a service popover simply switchs an open window
+    // to that particular service's settings
     _openPreferences(page) {
         this._main.set_string('prefs-page', '');
         this._main.set_string('prefs-page', page);
 
-        // GNOME refuses a second settings window while one is open, so bring
-        // ours forward instead. It has already switched tabs above.
+        // if the preferences window is already open, bring to front
         const open = global.get_window_actors()
             .map(actor => actor.meta_window)
             .find(w => w.get_wm_class() === 'org.gnome.Shell.Extensions' &&
                 w.get_title() === this.metadata.name);
+
         if (open)
             Main.activateWindow(open);
         else

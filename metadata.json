@@ -1,9 +1,11 @@
 {
   "name": "AI Usage Meters",
-  "description": "See how much of your Claude, Codex and Cursor limits you've used, right from the top bar. Not affiliated with Anthropic, OpenAI or Anysphere (Cursor).",
-  "uuid": "ai-usage@ganyuke.github.io",
+  "description": "Watch your Claude, Codex, and Cursor usage limits disappear with pretty double-circles, right in your GNOME top bar.",
+  "uuid": "ai-usage-meters@planet.nextcolor.org",
   "shell-version": ["46", "47", "48", "49", "50"],
-  "settings-schema": "org.gnome.shell.extensions.ai-usage",
+  "settings-schema": "org.gnome.shell.extensions.ai-usage-meters",
+  "gettext-domain": "ai-usage-meters",
+  "version": 1,
   "version-name": "1.0",
   "url": "https://github.com/ganyuke/ai-usage-meters"
 }

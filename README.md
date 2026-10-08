@@ -45,7 +45,7 @@ From the repository folder:
 This installs AI Usage and logs you out, so save your work first. After logging back in, turn it on:
 
 ```bash
-gnome-extensions enable ai-usage@ganyuke.github.io
+gnome-extensions enable ai-usage-meters@planet.nextcolor.org
 ```
 
 If you used the separate Claude Code Usage or Codex Usage extensions before, turn those off so you don't get two buttons for the same service.

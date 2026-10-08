@@ -1,11 +1,15 @@
-// Reads each service's existing sign-in from its folder and fetches usage.
-// Nothing is stored: the token is read fresh on every refresh and kept only
-// for the length of the request.
+// SPDX-FileCopyrightText: 2026 ganyuke
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Soup from 'gi://Soup';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+import {EXTENSION_NAME} from './services.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async');
+Gio._promisify(Gio.File.prototype, 'query_info_async');
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
 
@@ -15,6 +19,7 @@ export const SEVEN_DAYS = 7 * 24 * 3600;
 const CLAUDE_USAGE_API = 'https://api.anthropic.com/api/oauth/usage';
 const CODEX_USAGE_API = 'https://chatgpt.com/backend-api/wham/usage';
 const CODEX_RESETS_API = 'https://chatgpt.com/backend-api/wham/rate-limit-reset-credits';
+const CURSOR_USAGE_API = 'https://cursor.com/api/usage-summary';
 
 // Used when a 429 has no usable Retry-After header.
 const DEFAULT_RETRY_AFTER = 10 * 60;
@@ -93,26 +98,36 @@ async function getJson(session, message, cancellable) {
     }
 }
 
+// generic function to label a tier based on a raw value and a list of known plan
+// tiers used for Claude, Codex, and Cursor
+function tierLabel(raw, known) {
+    const text = `${raw ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
+    if (!text)
+        return null;
+    for (const [key, label] of known)
+        if (text.includes(key))
+            return label;
+    return text.toUpperCase();
+}
+
 // ---- Claude -------------------------------------------------------------
 
 function claudeTier(oauth) {
-    const text = `${oauth.subscriptionType ?? ''} ${oauth.rateLimitTier ?? ''}`.toLowerCase();
-    if (text.includes('max')) {
-        if (text.includes('20x'))
-            return 'MAX X20';
-        if (text.includes('5x'))
-            return 'MAX X5';
-        return 'MAX';
-    }
-    for (const [key, label] of [['enterprise', 'ENT'], ['team', 'TEAM'], ['pro', 'PRO'], ['free', 'FREE']]) {
-        if (text.includes(key))
-            return label;
-    }
-    return null;
+    return tierLabel(
+        `${oauth.subscriptionType ?? ''} ${oauth.rateLimitTier ?? ''}`,
+        [
+            ['20x', 'MAX X20'],
+            ['5x', 'MAX X5'],
+            ['max', 'MAX'],
+            ['enterprise', 'ENT'],
+            ['team', 'TEAM'],
+            ['pro', 'PRO'],
+            ['free', 'FREE'],
+        ]);
 }
 
 function claudeWindow(w) {
-    return {utilization: percent(w?.utilization), resets_at: w?.resets_at ?? null};
+    return { utilization: percent(w?.utilization), resets_at: w?.resets_at ?? null };
 }
 
 async function loadClaude(folder, session, cancellable) {
@@ -130,7 +145,7 @@ async function loadClaude(folder, session, cancellable) {
         .filter(([key]) => data[key])
         .map(([key, name]) => ({
             name,
-            windows: [{label: 'Weekly limit', win: claudeWindow(data[key]), total: SEVEN_DAYS}],
+            windows: [{ label: _('Weekly limit'), win: claudeWindow(data[key]), total: SEVEN_DAYS }],
         }));
 
     return {
@@ -145,10 +160,7 @@ async function loadClaude(folder, session, cancellable) {
 // ---- Codex --------------------------------------------------------------
 
 function codexTier(value) {
-    const normalized = `${value ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
-    if (!normalized)
-        return null;
-    const known = [
+    return tierLabel(value, [
         ['prolite', 'PRO X5'],
         ['pro', 'PRO X20'],
         ['plus', 'PLUS'],
@@ -157,12 +169,7 @@ function codexTier(value) {
         ['business', 'BUSINESS'],
         ['enterprise', 'ENT'],
         ['edu', 'EDU'],
-    ];
-    for (const [key, label] of known) {
-        if (normalized.includes(key))
-            return label;
-    }
-    return `${value}`.toUpperCase();
+    ]);
 }
 
 // Codex reports a reset time even for a window that hasn't started, set a
@@ -201,18 +208,18 @@ async function loadCodex(folder, session, cancellable) {
 
     const usage = {
         tier: codexTier(data.plan_type ?? rl.plan ?? rl.subscription_type ?? rl.rate_limit_tier ?? rl.tier),
-        primary: codexWindow(rl.primary_window, FIVE_HOURS) ?? {utilization: 0, resets_at: null},
-        secondary: codexWindow(rl.secondary_window, SEVEN_DAYS) ?? {utilization: 0, resets_at: null},
+        primary: codexWindow(rl.primary_window, FIVE_HOURS) ?? { utilization: 0, resets_at: null },
+        secondary: codexWindow(rl.secondary_window, SEVEN_DAYS) ?? { utilization: 0, resets_at: null },
         additional: (data.additional_rate_limits ?? [])
             .filter(entry => entry?.rate_limit)
             .map(entry => ({
-                name: `${entry.limit_name ?? 'Other'}`,
+                name: `${entry.limit_name ?? _('Other')}`,
                 windows: [
-                    {label: '5-hour limit', win: codexWindow(entry.rate_limit.primary_window, FIVE_HOURS), total: FIVE_HOURS},
-                    {label: 'Weekly limit', win: codexWindow(entry.rate_limit.secondary_window, SEVEN_DAYS), total: SEVEN_DAYS},
+                    { label: _('5-hour limit'), win: codexWindow(entry.rate_limit.primary_window, FIVE_HOURS), total: FIVE_HOURS },
+                    { label: _('Weekly limit'), win: codexWindow(entry.rate_limit.secondary_window, SEVEN_DAYS), total: SEVEN_DAYS },
                 ].filter(w => w.win),
             })),
-        resets: {count: data.rate_limit_reset_credits?.available_count ?? 0, details: []},
+        resets: { count: data.rate_limit_reset_credits?.available_count ?? 0, details: [] },
     };
 
     if (usage.resets.count > 0) {
@@ -220,12 +227,12 @@ async function loadCodex(folder, session, cancellable) {
             const credits = await getJson(session, codexMessage(CODEX_RESETS_API, tokens), cancellable);
             usage.resets.details = (credits.credits ?? [])
                 .filter(credit => credit?.status === 'available')
-                .map(credit => ({title: credit.title || 'Full reset', expiresAt: credit.expires_at ?? null}));
+                .map(credit => ({ title: credit.title || _('Full reset'), expiresAt: credit.expires_at ?? null }));
         } catch (e) {
             if (isCancelled(e))
                 throw e;
             // The count alone is still worth showing.
-            console.error(`AI Usage: Codex reset details failed: ${e.message}`);
+            console.error(`${EXTENSION_NAME}: Codex reset details failed: ${e.message}`);
         }
     }
     return usage;
@@ -233,32 +240,46 @@ async function loadCodex(folder, session, cancellable) {
 
 // ---- Cursor -------------------------------------------------------------
 
-// The endpoint Cursor's own dashboard reads. Private, so it may change.
-const CURSOR_USAGE_API = 'https://cursor.com/api/usage-summary';
-
-// The IDE keeps its sign-in in a SQLite database. GJS can't read SQLite, so
-// ask the Python that desktop distributions ship. Read-only, path as argv.
-const CURSOR_READ_TOKEN = `
-import pathlib, sqlite3, sys
-db = sqlite3.connect(pathlib.Path(sys.argv[1]).as_uri() + '?mode=ro', uri=True)
-row = db.execute("SELECT value FROM ItemTable WHERE key = 'cursorAuth/accessToken'").fetchone()
-value = row[0] if row else ''
-print(value.decode() if isinstance(value, bytes) else value)
-`;
+// so... GNOME Extensions say:
+// - Use of external scripts and binaries is strongly discouraged.
+// and if I need it:
+// - Extensions MUST NOT include binary executables or libraries
+// - Processes MUST be spawned carefully and exit cleanly
+// - Scripts MUST be written in GJS, unless absolutely necessary
+// - Scripts must be distributed under an OSI approved license
+// but I don't think I can expect people to have sqlite3 as a command line tool
+// nor do I want to pull in a huge SQLite driver dependency into a GNOME Extension
+// so I'm going to use Python to parse the SQLite database.
+// the cursor ide stores its sign-in in a SQLite database and GJS doesn't really
+// have SQLite support, so we must shell out to Python, which has it in its standard library
+// and of course, basically every desktop distribution ships Python.
+const cursorPythonParser = GLib.build_filenamev([
+    GLib.path_get_dirname(GLib.filename_from_uri(import.meta.url)[0]),
+    'cursor-parse.py',
+]);
 
 async function cursorIdeToken(folder, cancellable) {
     const db = GLib.build_filenamev([folder, 'User', 'globalStorage', 'state.vscdb']);
-    if (!GLib.file_test(db, GLib.FileTest.EXISTS))
-        return null;
     try {
-        const proc = Gio.Subprocess.new(['python3', '-c', CURSOR_READ_TOKEN, db],
+        await Gio.File.new_for_path(db).query_info_async('standard::type',
+            Gio.FileQueryInfoFlags.NONE, GLib.PRIORITY_DEFAULT, cancellable);
+    } catch (e) {
+        if (isCancelled(e))
+            // bubble up the cancellation error so it's not counted as a
+            // signed-out cursor account
+            throw e;
+        return null;
+    }
+    try {
+        // maybe should account for Cursor holding a lock on the database?
+        const proc = Gio.Subprocess.new(['python3', cursorPythonParser, db],
             Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
         const [stdout] = await proc.communicate_utf8_async(null, cancellable);
         return proc.get_successful() ? stdout.trim() || null : null;
     } catch (e) {
         if (isCancelled(e))
             throw e;
-        console.error(`AI Usage: can't read the Cursor sign-in (is python3 installed?): ${e.message}`);
+        console.error(`${EXTENSION_NAME}: can't read the Cursor sign-in (is python3 installed?): ${e.message}`);
         return null;
     }
 }
@@ -290,20 +311,17 @@ function cursorUserId(token) {
 }
 
 function cursorTier(value) {
-    const normalized = `${value ?? ''}`.toLowerCase().replace(/[\s-]/g, '_');
-    if (!normalized)
-        return null;
-    const known = {
-        free: 'HOBBY',
-        free_trial: 'TRIAL',
-        pro: 'PRO',
-        pro_plus: 'PRO+',
-        ultra: 'ULTRA',
-        team: 'TEAMS',
-        business: 'TEAMS',
-        enterprise: 'ENT',
-    };
-    return known[normalized] ?? normalized.replace(/_/g, ' ').toUpperCase();
+    return tierLabel(value, [
+        ['freetrial', 'TRIAL'],
+        ['free', 'HOBBY'],
+        ['proplus', 'PRO+'],
+        ['prostudent', 'PRO STUDENT'],
+        ['pro', 'PRO'],
+        ['ultra', 'ULTRA'],
+        ['team', 'TEAMS'],
+        ['business', 'TEAMS'],
+        ['enterprise', 'ENT'],
+    ]);
 }
 
 // Plan pools are the dashboard percentages. used/limit is included spend in
@@ -348,11 +366,11 @@ async function loadCursor(folder, session, cancellable) {
     const end = Date.parse(data.billingCycleEnd);
     const total = Number.isFinite(start) && end > start ? (end - start) / 1000 : 30 * 24 * 3600;
     const resetsAt = Number.isFinite(end) ? new Date(end).toISOString() : null;
-    const month = utilization => ({utilization, resets_at: resetsAt, total});
+    const month = utilization => ({ utilization, resets_at: resetsAt, total });
 
-    // Cursor Models (auto) and Other Models (api). A plan with only the first
-    // pool, such as Start, leaves the second unset. Without a plan object,
-    // both display messages have to parse or this isn't a team snapshot.
+    // auto is for first-party cursor models, api is for other models
+    // api might be missing if you use the Start plan
+    // and i think teams are different but I don't use them so I don't know
     let auto = cursorPoolPercent(pools, 'autoPercentUsed');
     let api = cursorPoolPercent(pools, 'apiPercentUsed');
     if (auto === null && api === null) {
@@ -374,8 +392,8 @@ async function loadCursor(folder, session, cancellable) {
     const spend = onDemand?.enabled ? cursorSpendPercent(onDemand) : null;
     if (spend !== null) {
         additional.push({
-            name: 'On-demand',
-            windows: [{label: 'Spending limit', win: month(spend), total}],
+            name: _('On-demand'),
+            windows: [{ label: _('Spending limit'), win: month(spend), total }],
         });
     }
 

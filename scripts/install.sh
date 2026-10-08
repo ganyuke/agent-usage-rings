@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 ganyuke
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 set -euo pipefail
 
@@ -10,8 +12,9 @@ for arg in "$@"; do
 	esac
 done
 
-repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-target_dir="$HOME/.local/share/gnome-shell/extensions/ai-usage@ganyuke.github.io"
+cd "$(dirname "$0")/.." # navigate to the repository root
+repo_dir="$(pwd)"
+target_dir="$HOME/.local/share/gnome-shell/extensions/ai-usage-meters@planet.nextcolor.org"
 
 if [ "$repo_dir" = "$target_dir" ]; then
 	echo "Run this from your copy of the repository, not from the installed extension folder"
