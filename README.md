@@ -40,6 +40,20 @@ If you need to proxy your connection, you can set your proxy in the General tab 
 
 ## Installation
 
+### From a release
+
+Download `ai-usage-meters@planet.nextcolor.org.shell-extension.zip` from the [latest release](https://github.com/ganyuke/ai-usage-meters/releases/latest), then install it:
+
+```bash
+gnome-extensions install --force ai-usage-meters@planet.nextcolor.org.shell-extension.zip
+```
+
+Log out and back in, then enable the extension:
+
+```bash
+gnome-extensions enable ai-usage-meters@planet.nextcolor.org
+```
+
 ### Manual installation
 
 > [!WARNING]
