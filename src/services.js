@@ -3,7 +3,7 @@
 
 import GLib from 'gi://GLib';
 
-export const EXTENSION_NAME = 'AI Usage Meters';
+export const EXTENSION_NAME = 'Agent Usage Rings';
 
 export function getServices(_) {
     return [

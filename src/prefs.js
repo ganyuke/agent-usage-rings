@@ -43,7 +43,7 @@ function group(title, description, rows) {
     return g;
 }
 
-export default class AiUsagePreferences extends ExtensionPreferences {
+export default class AgentUsageRingsPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const main = this.getSettings();
         window.set_default_size(640, 780);

@@ -1,15 +1,15 @@
-# Translation template for AI Usage Meters.
+# Translation template for Agent Usage Rings.
 # Copyright (c) 2026 Baptiste-Pasquier (claude-usage-extension)
 # Copyright (c) 2026 Kevin Pita (codex-usage-extension)
 # Copyright (c) 2026 byte4day (AI-Usage-Extension)
-# Copyright (c) 2026 ganyuke (AI Usage Meters)
-# This file is distributed under the same license as the AI Usage Meters package.
+# Copyright (c) 2026 ganyuke (Agent Usage Rings)
+# This file is distributed under the same license as the Agent Usage Rings package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: AI Usage Meters 1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/ganyuke/ai-usage-meters/issues\n"
+"Project-Id-Version: Agent Usage Rings 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/ganyuke/agent-usage-rings/issues\n"
 "POT-Creation-Date: 2026-10-08 12:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"

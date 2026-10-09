@@ -12,6 +12,7 @@ Gio._promisify(Gio.File.prototype, 'load_contents_async');
 Gio._promisify(Gio.File.prototype, 'query_info_async');
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
+Gio._promisify(Gio.Subprocess.prototype, 'wait_async');
 
 export const FIVE_HOURS = 5 * 3600;
 export const SEVEN_DAYS = 7 * 24 * 3600;
@@ -412,8 +413,86 @@ async function loadCursor(folder, session, cancellable) {
     };
 }
 
+// timeout for the CLI to refresh the login before giving up
+const LOGIN_REFRESH_TIMEOUT = 20;
+
+// commands for each CLI that should be able to refresh the login
+// without spending usage
+const LOGIN_REFRESH = {
+    claude: {
+        argv: ['claude', '-p', '/cost', '--strict-mcp-config', '--no-session-persistence', '--setting-sources', ''],
+        env: folder => [['CLAUDE_CONFIG_DIR', folder]],
+    },
+    codex: {
+        argv: ['codex', 'features', 'list'],
+        env: folder => [['CODEX_HOME', folder]],
+    },
+};
+
+// start the CLI to refresh the stored login
+async function refreshStoredLogin(serviceId, folder, cancellable) {
+    const spec = LOGIN_REFRESH[serviceId];
+    const launcher = new Gio.SubprocessLauncher({
+        flags: Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE,
+    });
+    for (const [key, value] of spec.env(folder))
+        launcher.setenv(key, value, true);
+    console.error(`${EXTENSION_NAME}: ${serviceId} login refresh: ${spec.argv.join(' ')}`);
+    const proc = launcher.spawnv(spec.argv);
+    let timedOut = false;
+    let timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, LOGIN_REFRESH_TIMEOUT, () => {
+        timeoutId = 0;
+        timedOut = true;
+        proc.force_exit();
+        return GLib.SOURCE_REMOVE;
+    });
+    try {
+        await proc.wait_async(cancellable);
+    } catch (e) {
+        proc.force_exit();
+        throw e;
+    } finally {
+        if (timeoutId)
+            GLib.source_remove(timeoutId);
+    }
+
+    if (timedOut)
+        throw new Error(`CLI timed out after ${LOGIN_REFRESH_TIMEOUT}s`);
+    if (!proc.get_successful())
+        throw new Error(`CLI exited with status ${proc.get_exit_status()}`);
+    console.error(`${EXTENSION_NAME}: ${serviceId} login refresh finished`);
+}
+
+// expired access tokens are either 401 or 403. hitting the Claude Usage API
+// with an expired token might also give back 429, probably because the API
+// doesn't like unauthenticated requests. so the first 429 we see is treated
+// as a sign to log in again. the second retry is treated as an actual rate limit
+// this is for both Codex and Claude endpoints. maybe it's sloppy to do Codex too,
+// but they might have the same issue. might as well cover the bases.
+const LOGIN_REFRESH_KINDS = ['expired', 'rate-limited'];
+
+async function loadWithLoginRefresh(serviceId, load, folder, session, cancellable) {
+    try {
+        return await load(folder, session, cancellable);
+    } catch (e) {
+        if (isCancelled(e) || !(e instanceof UsageError) || !LOGIN_REFRESH_KINDS.includes(e.kind))
+            throw e;
+        console.error(`${EXTENSION_NAME}: ${serviceId} usage returned ${e.kind}, refreshing login`);
+        try {
+            await refreshStoredLogin(serviceId, folder, cancellable);
+        } catch (refreshError) {
+            if (isCancelled(refreshError))
+                throw refreshError;
+            console.error(`${EXTENSION_NAME}: ${serviceId} login refresh failed: ${refreshError.message}`);
+            throw e;
+        }
+        console.error(`${EXTENSION_NAME}: ${serviceId} retrying usage`);
+        return load(folder, session, cancellable);
+    }
+}
+
 export const LOADERS = {
-    claude: loadClaude,
-    codex: loadCodex,
+    claude: (folder, session, cancellable) => loadWithLoginRefresh('claude', loadClaude, folder, session, cancellable),
+    codex: (folder, session, cancellable) => loadWithLoginRefresh('codex', loadCodex, folder, session, cancellable),
     cursor: loadCursor,
 };

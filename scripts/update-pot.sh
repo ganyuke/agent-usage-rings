@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 
 PACKAGE=$(jq -r '.name' src/metadata.json)
 VERSION=$(jq -r '."version-name" // .version' src/metadata.json)
-BUG_ADDRESS="https://github.com/ganyuke/ai-usage-meters/issues"
+BUG_ADDRESS="https://github.com/ganyuke/agent-usage-rings/issues"
 YEAR=$(date +%Y)
 
 xgettext --language=JavaScript --from-code=UTF-8 --keyword=_ \
@@ -16,7 +16,7 @@ xgettext --language=JavaScript --from-code=UTF-8 --keyword=_ \
     --package-name="$PACKAGE" \
     --package-version="$VERSION" \
     --msgid-bugs-address="$BUG_ADDRESS" \
-    --output=po/ai-usage-meters.pot
+    --output=po/agent-usage-rings.pot
 
 awk -v pkg="$PACKAGE" -v year="$YEAR" '
 /^# SOME DESCRIPTIVE TITLE/ {
@@ -34,4 +34,4 @@ awk -v pkg="$PACKAGE" -v year="$YEAR" '
     next
 }
 { print }
-' po/ai-usage-meters.pot > po/ai-usage-meters.pot.tmp && mv po/ai-usage-meters.pot.tmp po/ai-usage-meters.pot
+' po/agent-usage-rings.pot > po/agent-usage-rings.pot.tmp && mv po/agent-usage-rings.pot.tmp po/agent-usage-rings.pot

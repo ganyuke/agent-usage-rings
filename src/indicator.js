@@ -536,7 +536,8 @@ class UsageIndicator extends PanelMenu.Button {
         } catch (e) {
             if (isCancelled(e))
                 return;
-            if (!(e instanceof UsageError))
+            // Both of these show the same catch-all message, so log the reason.
+            if (!(e instanceof UsageError) || e.kind === 'server')
                 console.error(`${EXTENSION_NAME}: ${this._service.name} refresh failed: ${e.message}`);
             if (e instanceof UsageError && e.kind === 'rate-limited')
                 this._settings.set_int64('paused-until', Math.ceil(nowSeconds() + e.retryAfter));

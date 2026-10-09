@@ -7,7 +7,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 import {getServices} from './services.js';
 import {UsageIndicator} from './indicator.js';
 
-export default class AiUsageMetersExtension extends Extension {
+export default class AgentUsageRingsExtension extends Extension {
     enable() {
         this._main = this.getSettings();
         this._indicators = new Map();

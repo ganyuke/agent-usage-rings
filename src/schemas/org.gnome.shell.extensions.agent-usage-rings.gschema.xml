@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-FileCopyrightText: 2026 ganyuke
      SPDX-License-Identifier: GPL-2.0-or-later -->
-<schemalist gettext-domain="ai-usage-meters">
-  <schema id="org.gnome.shell.extensions.ai-usage-meters" path="/org/gnome/shell/extensions/ai-usage-meters/">
+<schemalist gettext-domain="agent-usage-rings">
+  <schema id="org.gnome.shell.extensions.agent-usage-rings" path="/org/gnome/shell/extensions/agent-usage-rings/">
     <key name="refresh-interval" type="i">
       <default>300</default>
       <summary>Refresh interval</summary>
@@ -19,7 +19,7 @@
       <description>Set by a menu's Settings button so the settings window opens on that service's tab</description>
     </key>
   </schema>
-  <schema id="org.gnome.shell.extensions.ai-usage-meters.service">
+  <schema id="org.gnome.shell.extensions.agent-usage-rings.service">
     <key name="show-in-panel" type="b">
       <default>true</default>
       <summary>Show in top bar</summary>
@@ -96,15 +96,15 @@
       <description>Cached usage data from the last available check, in case of API errors.</description>
     </key>
   </schema>
-  <schema id="org.gnome.shell.extensions.ai-usage-meters.claude"
-          path="/org/gnome/shell/extensions/ai-usage-meters/claude/"
-          extends="org.gnome.shell.extensions.ai-usage-meters.service"/>
-  <schema id="org.gnome.shell.extensions.ai-usage-meters.codex"
-          path="/org/gnome/shell/extensions/ai-usage-meters/codex/"
-          extends="org.gnome.shell.extensions.ai-usage-meters.service"/>
-  <schema id="org.gnome.shell.extensions.ai-usage-meters.cursor"
-          path="/org/gnome/shell/extensions/ai-usage-meters/cursor/"
-          extends="org.gnome.shell.extensions.ai-usage-meters.service">
+  <schema id="org.gnome.shell.extensions.agent-usage-rings.claude"
+          path="/org/gnome/shell/extensions/agent-usage-rings/claude/"
+          extends="org.gnome.shell.extensions.agent-usage-rings.service"/>
+  <schema id="org.gnome.shell.extensions.agent-usage-rings.codex"
+          path="/org/gnome/shell/extensions/agent-usage-rings/codex/"
+          extends="org.gnome.shell.extensions.agent-usage-rings.service"/>
+  <schema id="org.gnome.shell.extensions.agent-usage-rings.cursor"
+          path="/org/gnome/shell/extensions/agent-usage-rings/cursor/"
+          extends="org.gnome.shell.extensions.agent-usage-rings.service">
     <override name="panel-window">'max'</override>
   </schema>
 </schemalist>

@@ -1,4 +1,4 @@
-# AI Usage Meters
+# Agent Usage Rings
 
 ![GNOME Shell 46–50](https://img.shields.io/badge/GNOME%20Shell-46--50-blue)
 
@@ -8,7 +8,7 @@ Combines [Claude Code Usage](https://github.com/Haletran/claude-usage-extension)
 
 **Disclaimer: This extension is not affiliated with, funded by, or associated with Anthropic, OpenAI or Anysphere (Cursor).**
 
-<img width="1920" height="1080" alt="GNOME Desktop with AI Usage Meters" src="https://github.com/user-attachments/assets/7001d413-8623-40c6-9586-b94827c6fac2" />
+<img width="1920" height="1080" alt="GNOME Desktop with Agent Usage Rings" src="https://github.com/user-attachments/assets/7001d413-8623-40c6-9586-b94827c6fac2" />
 
 ## Features
 
@@ -22,13 +22,13 @@ Cursor is a little different from Claude Code and Codex since it has a monthly p
 
 ## Usage
 
-AI Usage Meters uses your Claude Code, Codex, and Cursor IDE (or the `cursor-agent` CLI, if the IDE is not available) credentials to poll your usage data. You must be signed into these tools beforehand for this extension to work. Once you are signed in, use the refresh button in the service's panel to populate your usage data.
+Agent Usage Rings uses your Claude Code, Codex, and Cursor IDE (or the `cursor-agent` CLI, if the IDE is not available) credentials to poll your usage data. You must be signed into these tools beforehand for this extension to work. Once you are signed in, use the refresh button in the service's panel to populate your usage data.
 
 - If you moved where Claude Code, Codex or Cursor keeps its files, choose that folder in the service's Settings tab.
 - Your sign-in may expire if you are not currently using the app (which tends to be a problem with Claude Code!). Opening it again usually fixes this.
 - Codex requires a ChatGPT account to poll usage data (API keys do not provide usage data).
 
-AI Usage Meters do not cache or store your credentials. Each check looks up your credentials on the spot.
+Agent Usage Rings does not cache or store your credentials. Each check looks up your credentials on the spot.
 
 If you need to proxy your connection, you can set your proxy in the General tab of the Settings window.
 
@@ -42,16 +42,16 @@ If you need to proxy your connection, you can set your proxy in the General tab 
 
 ### From a release
 
-Download `ai-usage-meters@planet.nextcolor.org.shell-extension.zip` from the [latest release](https://github.com/ganyuke/ai-usage-meters/releases/latest), then install it:
+Download `agent-usage-rings@planet.nextcolor.org.shell-extension.zip` from the [latest release](https://github.com/ganyuke/agent-usage-rings/releases/latest), then install it:
 
 ```bash
-gnome-extensions install --force ai-usage-meters@planet.nextcolor.org.shell-extension.zip
+gnome-extensions install --force agent-usage-rings@planet.nextcolor.org.shell-extension.zip
 ```
 
 Log out and back in, then enable the extension:
 
 ```bash
-gnome-extensions enable ai-usage-meters@planet.nextcolor.org
+gnome-extensions enable agent-usage-rings@planet.nextcolor.org
 ```
 
 ### Manual installation
@@ -65,15 +65,15 @@ From the repository folder:
 ./scripts/install.sh
 ```
 
-This installs AI Usage Meters and logs you out, so save your work first. After logging back in, enable the extension:
+This installs Agent Usage Rings and logs you out, so save your work first. After logging back in, enable the extension:
 
 ```bash
-gnome-extensions enable ai-usage-meters@planet.nextcolor.org
+gnome-extensions enable agent-usage-rings@planet.nextcolor.org
 ```
 
 ## Network activity
 
-AI Usage Meters makes outbound connections to the following hosts:
+Agent Usage Rings makes outbound connections to the following hosts:
 
 - Claude: `api.anthropic.com`
 - Codex: `chatgpt.com`

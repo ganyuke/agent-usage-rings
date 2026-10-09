@@ -14,7 +14,7 @@ done
 
 cd "$(dirname "$0")/.." # navigate to the repository root
 repo_dir="$(pwd)"
-target_dir="$HOME/.local/share/gnome-shell/extensions/ai-usage-meters@planet.nextcolor.org"
+target_dir="$HOME/.local/share/gnome-shell/extensions/agent-usage-rings@planet.nextcolor.org"
 
 if [ "$repo_dir" = "$target_dir" ]; then
 	echo "Run this from your copy of the repository, not from the installed extension folder"

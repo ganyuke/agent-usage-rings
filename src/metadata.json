@@ -1,11 +1,11 @@
 {
-  "name": "AI Usage Meters",
+  "name": "Agent Usage Rings",
   "description": "Watch your Claude, Codex, and Cursor usage limits disappear with pretty double-circles, right in your GNOME top bar.",
-  "uuid": "ai-usage-meters@planet.nextcolor.org",
+  "uuid": "agent-usage-rings@planet.nextcolor.org",
   "shell-version": ["46", "47", "48", "49", "50"],
-  "settings-schema": "org.gnome.shell.extensions.ai-usage-meters",
-  "gettext-domain": "ai-usage-meters",
+  "settings-schema": "org.gnome.shell.extensions.agent-usage-rings",
+  "gettext-domain": "agent-usage-rings",
   "version": 1,
   "version-name": "1.0",
-  "url": "https://github.com/ganyuke/ai-usage-meters"
+  "url": "https://github.com/ganyuke/agent-usage-rings"
 }
