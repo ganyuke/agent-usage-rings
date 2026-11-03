@@ -99,33 +99,24 @@ async function getJson(session, message, cancellable) {
     }
 }
 
-// generic function to label a tier based on a raw value and a list of known plan
-// tiers used for Claude, Codex, and Cursor
-function tierLabel(raw, known) {
-    const text = `${raw ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
-    if (!text)
-        return null;
-    for (const [key, label] of known) {
-        if (text.includes(key))
-            return label;
-    }
-    return text.toUpperCase();
+// most display tiers are just the plan name with underscores
+// some are alternatives but i don't want to manually handle them all
+function tierDisplay(raw) {
+    const text = `${raw ?? ''}`.trim().replace(/_/g, ' ').replace(/\s+/g, ' ');
+    return text ? text.toUpperCase() : null;
 }
 
 // ---- Claude -------------------------------------------------------------
 
+// known tiers: 20x (MAX X20), 5x (MAX X5), max, enterprise, team,
+// pro, free.
 function claudeTier(oauth) {
-    return tierLabel(
-        `${oauth.subscriptionType ?? ''} ${oauth.rateLimitTier ?? ''}`,
-        [
-            ['20x', 'MAX X20'],
-            ['5x', 'MAX X5'],
-            ['max', 'MAX'],
-            ['enterprise', 'ENT'],
-            ['team', 'TEAM'],
-            ['pro', 'PRO'],
-            ['free', 'FREE'],
-        ]);
+    const rate = `${oauth.rateLimitTier ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
+    if (rate === '20x')
+        return 'MAX X20';
+    if (rate === '5x')
+        return 'MAX X5';
+    return tierDisplay(`${oauth.subscriptionType ?? ''} ${oauth.rateLimitTier ?? ''}`);
 }
 
 function claudeWindow(w) {
@@ -161,17 +152,15 @@ async function loadClaude(folder, session, cancellable) {
 
 // ---- Codex --------------------------------------------------------------
 
+// known tiers: prolite (PRO X5), pro (PRO X20), plus, edu_plus,
+// free, team, business, enterprise, edu.
 function codexTier(value) {
-    return tierLabel(value, [
-        ['prolite', 'PRO X5'],
-        ['pro', 'PRO X20'],
-        ['plus', 'PLUS'],
-        ['free', 'FREE'],
-        ['team', 'TEAM'],
-        ['business', 'BUSINESS'],
-        ['enterprise', 'ENT'],
-        ['edu', 'EDU'],
-    ]);
+    const key = `${value ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
+    if (key === 'prolite')
+        return 'PRO X5';
+    if (key === 'pro')
+        return 'PRO X20';
+    return tierDisplay(value);
 }
 
 // Codex reports a reset time even for a window that hasn't started, set a
@@ -312,18 +301,19 @@ function cursorUserId(token) {
     }
 }
 
+// known tiers: freetrial, free, proplus, prostudent,
+// pro, ultra, team, business, enterprise.
 function cursorTier(value) {
-    return tierLabel(value, [
-        ['freetrial', 'TRIAL'],
-        ['free', 'HOBBY'],
-        ['proplus', 'PRO+'],
-        ['prostudent', 'PRO STUDENT'],
-        ['pro', 'PRO'],
-        ['ultra', 'ULTRA'],
-        ['team', 'TEAMS'],
-        ['business', 'TEAMS'],
-        ['enterprise', 'ENT'],
-    ]);
+    const key = `${value ?? ''}`.toLowerCase().replace(/[\s_-]/g, '');
+    if (key === 'freetrial')
+        return 'TRIAL';
+    if (key === 'free')
+        return 'HOBBY';
+    if (key === 'proplus')
+        return 'PRO+';
+    if (key === 'prostudent')
+        return 'PRO STUDENT';
+    return tierDisplay(value);
 }
 
 // Plan pools are the dashboard percentages. used/limit is included spend in
