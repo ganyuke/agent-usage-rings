@@ -38,6 +38,8 @@ If you need to proxy your connection, you can set your proxy in the General tab 
 - Logged-in Claude Code, Codex, or Cursor
 - `python3` to parse the Cursor IDE credentials
 
+Encrypted Cursor sign-ins also need the system libsecret and OpenSSL libraries and an unlocked desktop keyring.
+
 ## Installation
 
 ### From a release

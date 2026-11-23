@@ -1,3 +1,5 @@
 *.zip
 src/schemas/gschemas.compiled
 node_modules/
+__pycache__/
+*.pyc

@@ -10,7 +10,7 @@ zip_file="$(pwd)/dist/$uuid.shell-extension.zip"
 
 mkdir -p dist
 rm -f "$zip_file"
-(cd src && zip -qr "$zip_file" . -x schemas/gschemas.compiled)
+(cd src && zip -qr "$zip_file" . -x schemas/gschemas.compiled '*/__pycache__/*' '__pycache__/*' '*.pyc')
 zip -qj "$zip_file" LICENSE LICENSE.upstream
 
 echo "Created dist/$uuid.shell-extension.zip"
